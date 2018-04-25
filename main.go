@@ -1,30 +1,29 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
-	"net/http"
 	"log"
-	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+	"net/http"
+
+	"fmt"
+
+	"github.com/asaskevich/govalidator"
+	"github.com/gorilla/mux"
 )
 
-func init() {
-
-	db, err := sql.Open("mysql", "test:test@tcp(cr-mysql-grpc-server:3306)/test?parseTime=true")
-	if err != nil {
-		log.Fatalf("Could not to open a connection: %v", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		log.Fatalf("Could not ping a database: %v", err)
-	}
+type User struct {
+	Email string `valid:"email"`
 }
 
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello world"))
-	}).Methods("GET")
-	log.Fatal(http.ListenAndServe(":5000", r))
 
+		_, err := govalidator.ValidateStruct(User{
+			Email: "c@c",
+		})
+		fmt.Println(err)
+		w.Write([]byte("OK"))
+	}).Methods("GET")
+	fmt.Println("Listening on localhost:5000")
+	log.Fatal(http.ListenAndServe(":5000", r))
 }
